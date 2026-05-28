@@ -1,0 +1,57 @@
+name: Проверка компиляции
+
+on:
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: windows-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    
+    - name: Компиляция изменённых файлов студентов
+      run: |
+        git fetch origin main
+        
+        # Ищем изменённые .cpp файлы
+        $files = git diff --name-only origin/main...HEAD | Where-Object { $_ -match '\.cpp$' }
+        
+        if ($files.Count -eq 0) {
+          Write-Host "⚠️ Нет изменённых .cpp файлов"
+          exit 0
+        }
+        
+        $allOk = $true
+        
+        foreach ($file in $files) {
+          # Извлекаем имя студента из пути students/ИМЯ/
+          if ($file -match 'students/([^/]+)/') {
+            $student = $matches[1]
+          } else {
+            $student = "unknown"
+          }
+          
+          Write-Host ""
+          Write-Host "======================================"
+          Write-Host "👤 Студент: $student"
+          Write-Host "📄 Файл: $file"
+          Write-Host "======================================"
+          
+          cl /EHsc /nologo /Fe:"temp_$student.exe" $file
+          
+          if ($LASTEXITCODE -ne 0) {
+            Write-Host "❌ $student: ошибка компиляции в $file"
+            $allOk = $false
+          } else {
+            Write-Host "✅ $student: скомпилирован успешно"
+          }
+        }
+        
+        if (-not $allOk) {
+          exit 1
+        }
+      shell: pwsh
