@@ -13,45 +13,41 @@ jobs:
       with:
         fetch-depth: 0
     
-    - name: Компиляция изменённых файлов студентов
+    - name: Компиляция изменённых файлов
       run: |
         git fetch origin main
         
-        # Ищем изменённые .cpp файлы
         $files = git diff --name-only origin/main...HEAD | Where-Object { $_ -match '\.cpp$' }
         
         if ($files.Count -eq 0) {
-          Write-Host "⚠️ Нет изменённых .cpp файлов"
+          Write-Host "Нет изменённых .cpp файлов"
           exit 0
         }
         
-        $allOk = $true
-        
         foreach ($file in $files) {
-          # Извлекаем имя студента из пути students/ИМЯ/
+          # Извлекаем имя студента
+          $student = "unknown"
           if ($file -match 'students/([^/]+)/') {
             $student = $matches[1]
-          } else {
-            $student = "unknown"
           }
           
           Write-Host ""
-          Write-Host "======================================"
-          Write-Host "👤 Студент: $student"
-          Write-Host "📄 Файл: $file"
-          Write-Host "======================================"
+          Write-Host "===================================="
+          Write-Host "Студент: $student"
+          Write-Host "Файл: $file"
+          Write-Host "===================================="
           
-          cl /EHsc /nologo /Fe:"temp_$student.exe" $file
+          $outputName = "temp_" + $student + ".exe"
+          cl /EHsc /nologo /Fe:$outputName $file
           
           if ($LASTEXITCODE -ne 0) {
-            Write-Host "❌ $student: ошибка компиляции в $file"
-            $allOk = $false
-          } else {
-            Write-Host "✅ $student: скомпилирован успешно"
+            Write-Host "ОШИБКА у $student в файле $file"
+            exit 1
           }
+          
+          Write-Host "OK: $student"
         }
         
-        if (-not $allOk) {
-          exit 1
-        }
+        Write-Host ""
+        Write-Host "Все файлы скомпилированы"
       shell: pwsh
