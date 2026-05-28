@@ -38,7 +38,7 @@ jobs:
           Write-Host "===================================="
           
           $outputName = "temp_" + $student + ".exe"
-          cl /EHsc /nologo /Fe:$outputName $file
+          & "cl" /EHsc /nologo /Fe:$outputName $file
           
           if ($LASTEXITCODE -ne 0) {
             Write-Host "ОШИБКА у $student в файле $file"
@@ -50,4 +50,4 @@ jobs:
         
         Write-Host ""
         Write-Host "Все файлы скомпилированы"
-      shell: pwsh
+      shell: cmd
