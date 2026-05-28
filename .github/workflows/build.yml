@@ -13,41 +13,21 @@ jobs:
       with:
         fetch-depth: 0
     
-    - name: Компиляция изменённых файлов
+    - name: Компиляция
+      shell: cmd
       run: |
         git fetch origin main
         
-        $files = git diff --name-only origin/main...HEAD | Where-Object { $_ -match '\.cpp$' }
+        for /f "delims=" %%f in ('git diff --name-only origin/main...HEAD ^| findstr "\.cpp$"') do (
+          echo.
+          echo Компилирую: %%f
+          cl /EHsc /nologo /Fe:temp_test.exe %%f
+          if errorlevel 1 (
+            echo ОШИБКА в %%f
+            exit /b 1
+          )
+          echo OK: %%f
+        )
         
-        if ($files.Count -eq 0) {
-          Write-Host "Нет изменённых .cpp файлов"
-          exit 0
-        }
-        
-        foreach ($file in $files) {
-          # Извлекаем имя студента
-          $student = "unknown"
-          if ($file -match 'students/([^/]+)/') {
-            $student = $matches[1]
-          }
-          
-          Write-Host ""
-          Write-Host "===================================="
-          Write-Host "Студент: $student"
-          Write-Host "Файл: $file"
-          Write-Host "===================================="
-          
-          $outputName = "temp_" + $student + ".exe"
-          & "cl" /EHsc /nologo /Fe:$outputName $file
-          
-          if ($LASTEXITCODE -ne 0) {
-            Write-Host "ОШИБКА у $student в файле $file"
-            exit 1
-          }
-          
-          Write-Host "OK: $student"
-        }
-        
-        Write-Host ""
-        Write-Host "Все файлы скомпилированы"
-      shell: cmd
+        echo.
+        echo Все файлы скомпилированы
