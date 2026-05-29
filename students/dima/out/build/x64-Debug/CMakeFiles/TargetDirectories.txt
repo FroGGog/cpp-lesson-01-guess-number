@@ -1,0 +1,3 @@
+D:/School Danek77/cpp-lesson-01-guess-number/students/dima/out/build/x64-Debug/CMakeFiles/MyProject.dir
+D:/School Danek77/cpp-lesson-01-guess-number/students/dima/out/build/x64-Debug/CMakeFiles/edit_cache.dir
+D:/School Danek77/cpp-lesson-01-guess-number/students/dima/out/build/x64-Debug/CMakeFiles/rebuild_cache.dir
